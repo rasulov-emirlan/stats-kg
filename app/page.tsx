@@ -1,8 +1,19 @@
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import BarsH from "@/components/charts/BarsH";
-import DeviationBars from "@/components/charts/DeviationBars";
-import LineChart from "@/components/charts/LineChart";
-import { ExportLinks, InsightCard, NoData, Section, StatTile } from "@/components/ui";
+
+import IndexBars from "@/components/charts/index-bars";
+import RegionBars from "@/components/charts/region-bars";
+import TrendChart from "@/components/charts/trend-chart";
+import { ExportButtons, InsightCard, NoData, StatTile } from "@/components/ui";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   attentionMultiplier,
   carsPerApartment,
@@ -10,7 +21,7 @@ import {
   paybackYears,
   trimRampUp,
 } from "@/lib/derive";
-import { fmtCompact, fmtDayShort, fmtInt, fmtKgs, fmtPct, fmtUsd, fmtX, plural } from "@/lib/format";
+import { fmtDayShort, fmtInt, fmtKgs, fmtPct, fmtUsd, fmtX, plural } from "@/lib/format";
 import { getDashboard, getDemand, getListingTotals, getSold } from "@/lib/sources/avtostat";
 import {
   CATEGORY_APARTMENTS_SALE,
@@ -78,14 +89,12 @@ export default async function Home() {
     }));
 
   return (
-    <>
-      {/* hero */}
-      <section className="mx-auto max-w-5xl px-4 pt-14">
-        <p className="kicker text-g500">{"// статистика жизни в кыргызстане"}</p>
-        <h1 className="mt-2 max-w-[24ch] text-4xl font-bold sm:text-5xl">
-          Что происходит на рынках <span className="text-red">страны</span>
+    <div className="space-y-6">
+      <section>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+          Что происходит на рынках Кыргызстана
         </h1>
-        <p className="mt-4 max-w-[70ch] text-g800">
+        <p className="mt-2 max-w-[70ch] text-sm text-muted-foreground sm:text-base">
           Каждый день мы пересчитываем{" "}
           {dash ? <strong>{fmtInt(dash.overview.active_count)}</strong> : "десятки тысяч"}{" "}
           объявлений о продаже автомобилей и{" "}
@@ -97,36 +106,36 @@ export default async function Home() {
           — о продаже квартир, чтобы простыми цифрами показать, сколько стоит жизнь в
           Кыргызстане. Без опросов и оценок — только реальные цены рынка.
         </p>
+      </section>
 
-        {ratio != null && (
-          <div className="mt-10 border-y-4 border-ink py-8">
-            <p className="kicker text-g500">{"// главная пропорция"}</p>
-            <p className="mt-2 font-heading text-5xl font-bold sm:text-7xl">
-              1&nbsp;квартира&nbsp;={" "}
-              <span className="text-red">{ratio.toLocaleString("ru-RU")}</span>{" "}
+      {ratio != null && (
+        <Card>
+          <CardHeader>
+            <CardDescription>Главная пропорция</CardDescription>
+            <CardTitle className="text-4xl tabular-nums sm:text-5xl">
+              1&nbsp;квартира = {ratio.toLocaleString("ru-RU")}{" "}
               {/* fractional counts take genitive singular: 7,1 машины */}
               {Number.isInteger(ratio)
                 ? plural(ratio, "машина", "машины", "машин")
                 : "машины"}
-            </p>
-            <p className="mt-3 max-w-[70ch] text-g800">
-              Медианная квартира в Бишкеке (
-              {bishkekSale?.medianPrice != null ? fmtUsd(bishkekSale.medianPrice) : "—"}) стоит
-              примерно как {Math.round(ratio)}{" "}
-              {plural(
-                Math.round(ratio),
-                "медианный автомобиль",
-                "медианных автомобиля",
-                "медианных автомобилей"
-              )}{" "}
-              с местного рынка ({carUsd != null ? fmtUsd(carUsd) : "—"} за штуку).
-            </p>
-          </div>
-        )}
-      </section>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            Медианная квартира в Бишкеке (
+            {bishkekSale?.medianPrice != null ? fmtUsd(bishkekSale.medianPrice) : "—"}) стоит
+            примерно как {Math.round(ratio)}{" "}
+            {plural(
+              Math.round(ratio),
+              "медианный автомобиль",
+              "медианных автомобиля",
+              "медианных автомобилей"
+            )}{" "}
+            с местного рынка ({carUsd != null ? fmtUsd(carUsd) : "—"} за штуку).
+          </CardContent>
+        </Card>
+      )}
 
-      {/* stat tiles */}
-      <section className="mx-auto mt-10 grid max-w-5xl grid-cols-2 gap-3 px-4 lg:grid-cols-4">
+      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {carUsd != null && (
           <StatTile
             label="Медианный автомобиль"
@@ -144,8 +153,8 @@ export default async function Home() {
         {bishkekRent?.medianPrice != null && (
           <StatTile
             label="Аренда в Бишкеке"
-            value={`${fmtInt(bishkekRent.medianPrice)} сом/мес`}
-            note="долгосрочная, все типы жилья"
+            value={`${fmtInt(bishkekRent.medianPrice)} сом`}
+            note="в месяц, долгосрочная, все типы жилья"
           />
         )}
         {fx && (
@@ -157,13 +166,15 @@ export default async function Home() {
         )}
       </section>
 
-      {/* insight cards */}
-      <Section
-        kicker="01 — инсайты"
-        title="Пять цифр, которые всё объясняют"
-        lead="Каждая карточка — одно наблюдение на стыке двух рынков. Раскройте «как посчитано», чтобы увидеть кухню."
-      >
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <section className="space-y-3">
+        <div>
+          <h2 className="text-lg font-semibold">Пять цифр, которые всё объясняют</h2>
+          <p className="text-sm text-muted-foreground">
+            Каждая карточка — одно наблюдение на стыке двух рынков. Раскройте «как посчитано»,
+            чтобы увидеть кухню.
+          </p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {payback != null && bishkekYield && (
             <InsightCard
               figure={`${payback} ${plural(payback, "год", "года", "лет")}`}
@@ -252,123 +263,128 @@ export default async function Home() {
             </InsightCard>
           )}
         </div>
-      </Section>
+      </section>
 
-      {/* markets in motion */}
-      <Section
-        kicker="02 — динамика"
-        title="Рынки в движении"
-        lead="Сколько предложений на рынке прямо сейчас и как меняется цена жилья."
-      >
-        <div className="grid gap-10 lg:grid-cols-2">
-          <div>
-            <h3 className="font-bold">Автомобили в продаже</h3>
-            <p className="mb-3 text-sm text-g500">активных объявлений, последние 90 дней</p>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Автомобили в продаже</CardTitle>
+            <CardDescription>активных объявлений, последние 90 дней</CardDescription>
+          </CardHeader>
+          <CardContent>
             {carsTrend.length > 1 ? (
-              <>
-                <LineChart
-                  points={carsTrend}
-                  format="compact"
-                  tableCaption="Активные автообъявления по дням"
-                  valueHeader="Объявлений"
-                />
-                <ExportLinks
-                  csv="/api/export/cars-trend"
-                  json="https://avtostat.kg/api/dashboard"
-                />
-              </>
+              <TrendChart
+                points={carsTrend}
+                format="compact"
+                valueLabel="Объявлений"
+                tableCaption="Активные автообъявления по дням"
+              />
             ) : (
               <NoData />
             )}
-          </div>
-          <div>
-            <h3 className="font-bold">Цена квартир (вторичка)</h3>
-            <p className="mb-3 text-sm text-g500">
+          </CardContent>
+          <CardFooter>
+            <ExportButtons
+              csv="/api/export/cars-trend"
+              json="https://avtostat.kg/api/dashboard"
+            />
+          </CardFooter>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Цена квартир (вторичка)</CardTitle>
+            <CardDescription>
               медиана по стране в сомах — серия молодая, копим историю с июля 2026
-            </p>
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
             {miPoints.length > 1 ? (
-              <>
-                <LineChart
-                  points={miPoints}
-                  format="compactPrecise"
-                  tableCaption="Медианная цена квартир по дням"
-                  valueHeader="Медиана, сом"
-                />
-                <ExportLinks
-                  csv="/api/export/market-index"
-                  json="https://stats.kg/api/market-index?category=2046"
-                />
-              </>
+              <TrendChart
+                points={miPoints}
+                format="compactPrecise"
+                valueLabel="Медиана, сом"
+                tableCaption="Медианная цена квартир по дням"
+              />
             ) : (
               <NoData />
             )}
-          </div>
-        </div>
-      </Section>
+          </CardContent>
+          <CardFooter>
+            <ExportButtons
+              csv="/api/export/market-index"
+              json="https://stats.kg/api/market-index?category=2046"
+            />
+          </CardFooter>
+        </Card>
+      </div>
 
-      {/* price geography */}
-      <Section
-        kicker="03 — география"
-        title="Где жильё дороже"
-        lead="Медианная цена квадратного метра квартир на продажу, по регионам."
-      >
-        {regionBars.length > 0 ? (
-          <>
-            <BarsH
+      <Card>
+        <CardHeader>
+          <CardTitle>Где жильё дороже</CardTitle>
+          <CardDescription>
+            медианная цена квадратного метра квартир на продажу, по регионам
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {regionBars.length > 0 ? (
+            <RegionBars
               rows={regionBars}
               format="usdInt"
+              valueLabel="$ за м²"
+              detailLabel="Выборка"
               tableCaption="Цена квадратного метра по регионам"
-              valueHeader="$ за м²"
-              detailHeader="Выборка"
             />
-            <ExportLinks
-              csv="/api/export/regions-sale"
-              json="https://stats.kg/api/regions?scope=region&mode=sale"
-            />
-          </>
-        ) : (
-          <NoData />
-        )}
-      </Section>
+          ) : (
+            <NoData />
+          )}
+        </CardContent>
+        <CardFooter>
+          <ExportButtons
+            csv="/api/export/regions-sale"
+            json="https://stats.kg/api/regions?scope=region&mode=sale"
+          />
+        </CardFooter>
+      </Card>
 
-      {/* demand */}
-      <Section
-        kicker="04 — спрос"
-        title="Какие машины хотят кыргызстанцы"
-        lead="Индекс внимания: как часто смотрят объявления с каждым типом топлива относительно всего рынка (рынок = 100)."
-      >
-        {fuelRows.length > 0 ? (
-          <>
-            <DeviationBars
+      <Card>
+        <CardHeader>
+          <CardTitle>Какие машины хотят кыргызстанцы</CardTitle>
+          <CardDescription>
+            индекс внимания: как часто смотрят объявления с каждым типом топлива относительно
+            всего рынка (рынок = 100)
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {fuelRows.length > 0 ? (
+            <IndexBars
               rows={fuelRows}
+              valueLabel="Индекс"
               baselineLabel="весь рынок"
               tableCaption="Индекс внимания по типу топлива"
-              valueHeader="Индекс"
             />
-            <ExportLinks csv="/api/export/fuel-demand" json="https://avtostat.kg/api/demand" />
-          </>
-        ) : (
-          <NoData />
-        )}
-      </Section>
+          ) : (
+            <NoData />
+          )}
+        </CardContent>
+        <CardFooter>
+          <ExportButtons csv="/api/export/fuel-demand" json="https://avtostat.kg/api/demand" />
+        </CardFooter>
+      </Card>
 
-      {/* go deeper */}
-      <section className="mx-auto mt-16 max-w-5xl px-4">
-        <div className="bg-ink p-8 text-paper">
-          <p className="kicker text-g500">{"// для профи"}</p>
-          <h2 className="mt-1 text-2xl font-bold">Копнуть глубже</h2>
-          <p className="mt-2 max-w-[70ch] text-sm text-g300">
+      <Card>
+        <CardHeader>
+          <CardTitle>Копнуть глубже</CardTitle>
+          <CardDescription>
             Таблицы по всем регионам, доходность аренды, потеря цены по маркам, самые желанные
             модели — и выгрузка каждого набора в CSV.
-          </p>
-          <Link
-            href="/glubzhe"
-            className="mt-5 inline-block border-2 border-paper px-5 py-2 font-heading font-medium transition-colors duration-150 hover:border-red hover:text-red"
-          >
-            Открыть раздел →
-          </Link>
-        </div>
-      </section>
-    </>
+          </CardDescription>
+        </CardHeader>
+        <CardFooter>
+          <Button render={<Link href="/glubzhe" />}>
+            Открыть раздел <ArrowRight />
+          </Button>
+        </CardFooter>
+      </Card>
+    </div>
   );
 }
