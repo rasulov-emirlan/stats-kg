@@ -1,5 +1,22 @@
 import type { Metadata } from "next";
-import { ExportLinks, NoData, Section } from "@/components/ui";
+
+import { ExportButtons, NoData } from "@/components/ui";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { paybackYears, trimRampUp } from "@/lib/derive";
 import { fmtDayShort, fmtInt, fmtPct } from "@/lib/format";
 import { getDashboard, getDemand, getSold } from "@/lib/sources/avtostat";
@@ -20,25 +37,12 @@ export const metadata: Metadata = {
     "Полные таблицы: недвижимость и аренда по регионам, доходность, потеря цены автомобилей по маркам, самые желанные модели. Всё выгружается в CSV.",
 };
 
-function Th({ children, num = false }: { children: React.ReactNode; num?: boolean }) {
-  return (
-    <th
-      className={`border-b border-ink px-3 py-2 text-xs font-medium uppercase tracking-wide text-g500 ${num ? "text-right" : "text-left"}`}
-    >
-      {children}
-    </th>
-  );
+function NumHead({ children }: { children: React.ReactNode }) {
+  return <TableHead className="text-right">{children}</TableHead>;
 }
 
-function Td({ children, num = false }: { children: React.ReactNode; num?: boolean }) {
-  return (
-    <td
-      className={`border-b border-g100 px-3 py-2 text-sm ${num ? "text-right" : "text-left"}`}
-      style={num ? { fontVariantNumeric: "tabular-nums" } : undefined}
-    >
-      {children}
-    </td>
-  );
+function NumCell({ children }: { children: React.ReactNode }) {
+  return <TableCell className="text-right tabular-nums">{children}</TableCell>;
 }
 
 export default async function Glubzhe() {
@@ -70,116 +74,127 @@ export default async function Glubzhe() {
   const miPoints = trimRampUp(mi?.points ?? []);
 
   return (
-    <>
-      <section className="mx-auto max-w-5xl px-4 pt-14">
-        <p className="kicker text-g500">{"// раздел для профи"}</p>
-        <h1 className="mt-2 text-4xl font-bold">Глубже</h1>
-        <p className="mt-3 max-w-[70ch] text-g800">
+    <div className="space-y-6">
+      <section>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Глубже</h1>
+        <p className="mt-2 max-w-[70ch] text-sm text-muted-foreground sm:text-base">
           Все таблицы, из которых собраны цифры на главной, — целиком, с размерами выборок и
-          выгрузкой в CSV. Ссылка «JSON» под каждым блоком ведёт на живой источник данных.
+          выгрузкой в CSV. Кнопка «JSON» под каждым блоком ведёт на живой источник данных.
         </p>
       </section>
 
-      <Section
-        kicker="A — недвижимость"
-        title="Регионы: цены, аренда, доходность"
-        lead="Продажа квартир (вторичка, USD), долгосрочная аренда (сомы) и валовая доходность — по каждому региону, где выборка достаточна."
-      >
-        {regionTable.length > 0 ? (
-          <>
-            <div className="overflow-x-auto border border-g300">
-              <table className="w-full">
-                <thead className="bg-g100">
-                  <tr>
-                    <Th>Регион</Th>
-                    <Th num>Объявл. продажи</Th>
-                    <Th num>Медиана, $</Th>
-                    <Th num>$/м²</Th>
-                    <Th num>Объявл. аренды</Th>
-                    <Th num>Аренда, сом/мес</Th>
-                    <Th num>Доходность</Th>
-                    <Th num>Окупаемость</Th>
-                  </tr>
-                </thead>
-                <tbody>
+      <Card>
+        <CardHeader>
+          <CardTitle>Регионы: цены, аренда, доходность</CardTitle>
+          <CardDescription>
+            Продажа квартир (вторичка, USD), долгосрочная аренда (сомы) и валовая доходность —
+            по каждому региону, где выборка достаточна.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {regionTable.length > 0 ? (
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Регион</TableHead>
+                    <NumHead>Объявл. продажи</NumHead>
+                    <NumHead>Медиана, $</NumHead>
+                    <NumHead>$/м²</NumHead>
+                    <NumHead>Объявл. аренды</NumHead>
+                    <NumHead>Аренда, сом/мес</NumHead>
+                    <NumHead>Доходность</NumHead>
+                    <NumHead>Окупаемость</NumHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {regionTable.map((r) => (
-                    <tr key={r.region} className="hover:bg-g100">
-                      <Td>{r.region}</Td>
-                      <Td num>{fmtInt(r.saleCount)}</Td>
-                      <Td num>{r.medianUsd != null ? fmtInt(r.medianUsd) : "—"}</Td>
-                      <Td num>{r.sqm != null ? fmtInt(r.sqm) : "—"}</Td>
-                      <Td num>{r.rentCount != null ? fmtInt(r.rentCount) : "—"}</Td>
-                      <Td num>{r.rentKgs != null ? fmtInt(r.rentKgs) : "—"}</Td>
-                      <Td num>{r.yieldPct != null ? fmtPct(r.yieldPct, 1) : "—"}</Td>
-                      <Td num>{r.payback != null ? `${r.payback} лет` : "—"}</Td>
-                    </tr>
+                    <TableRow key={r.region}>
+                      <TableCell className="font-medium">{r.region}</TableCell>
+                      <NumCell>{fmtInt(r.saleCount)}</NumCell>
+                      <NumCell>{r.medianUsd != null ? fmtInt(r.medianUsd) : "—"}</NumCell>
+                      <NumCell>{r.sqm != null ? fmtInt(r.sqm) : "—"}</NumCell>
+                      <NumCell>{r.rentCount != null ? fmtInt(r.rentCount) : "—"}</NumCell>
+                      <NumCell>{r.rentKgs != null ? fmtInt(r.rentKgs) : "—"}</NumCell>
+                      <NumCell>{r.yieldPct != null ? fmtPct(r.yieldPct, 1) : "—"}</NumCell>
+                      <NumCell>{r.payback != null ? `${r.payback} лет` : "—"}</NumCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
-            </div>
-            <ExportLinks
-              csv="/api/export/regions-full"
-              json="https://stats.kg/api/regions?scope=region&mode=yield"
-            />
-            <p className="mt-2 max-w-[70ch] text-xs text-g500">
-              Баткен отсутствует: выборка меньше порога надёжности (5 объявлений в группе).
-              Малые выборки (Нарын, Талас) показываем, но доверять им стоит осторожно —
-              смотрите столбцы с числом объявлений.
-            </p>
-          </>
-        ) : (
-          <NoData />
-        )}
-      </Section>
+                </TableBody>
+              </Table>
+              <p className="mt-3 max-w-[70ch] text-xs text-muted-foreground">
+                Баткен отсутствует: выборка меньше порога надёжности (5 объявлений в группе).
+                Малые выборки (Нарын, Талас) показываем, но доверять им стоит осторожно —
+                смотрите столбцы с числом объявлений.
+              </p>
+            </>
+          ) : (
+            <NoData />
+          )}
+        </CardContent>
+        <CardFooter>
+          <ExportButtons
+            csv="/api/export/regions-full"
+            json="https://stats.kg/api/regions?scope=region&mode=yield"
+          />
+        </CardFooter>
+      </Card>
 
-      <Section
-        kicker="B — недвижимость"
-        title="Индекс цены квартир, все точки"
-        lead="Медиана, квартили и число живых объявлений на каждый замер. Ранние замеры с неполным покрытием (меньше 60% от лучшего) отброшены."
-      >
-        {miPoints.length > 0 ? (
-          <>
-            <div className="overflow-x-auto border border-g300">
-              <table className="w-full">
-                <thead className="bg-g100">
-                  <tr>
-                    <Th>Замер</Th>
-                    <Th num>Объявлений</Th>
-                    <Th num>P25, сом</Th>
-                    <Th num>Медиана, сом</Th>
-                    <Th num>P75, сом</Th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {miPoints.map((p) => (
-                    <tr key={p.takenAt} className="hover:bg-g100">
-                      <Td>{fmtDayShort(p.takenAt)}</Td>
-                      <Td num>{fmtInt(p.liveCount)}</Td>
-                      <Td num>{fmtInt(p.p25)}</Td>
-                      <Td num>{fmtInt(p.median)}</Td>
-                      <Td num>{fmtInt(p.p75)}</Td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <ExportLinks
-              csv="/api/export/market-index"
-              json="https://stats.kg/api/market-index?category=2046"
-            />
-          </>
-        ) : (
-          <NoData />
-        )}
-      </Section>
+      <Card>
+        <CardHeader>
+          <CardTitle>Индекс цены квартир, все точки</CardTitle>
+          <CardDescription>
+            Медиана, квартили и число живых объявлений на каждый замер. Ранние замеры с
+            неполным покрытием (меньше 60% от лучшего) отброшены.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {miPoints.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Замер</TableHead>
+                  <NumHead>Объявлений</NumHead>
+                  <NumHead>P25, сом</NumHead>
+                  <NumHead>Медиана, сом</NumHead>
+                  <NumHead>P75, сом</NumHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {miPoints.map((p) => (
+                  <TableRow key={p.takenAt}>
+                    <TableCell className="font-medium">{fmtDayShort(p.takenAt)}</TableCell>
+                    <NumCell>{fmtInt(p.liveCount)}</NumCell>
+                    <NumCell>{fmtInt(p.p25)}</NumCell>
+                    <NumCell>{fmtInt(p.median)}</NumCell>
+                    <NumCell>{fmtInt(p.p75)}</NumCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <NoData />
+          )}
+        </CardContent>
+        <CardFooter>
+          <ExportButtons
+            csv="/api/export/market-index"
+            json="https://stats.kg/api/market-index?category=2046"
+          />
+        </CardFooter>
+      </Card>
 
-      <Section
-        kicker="C — автомобили"
-        title="Самые желанные и самые незаметные модели"
-        lead={`Индекс внимания (рынок = 100) по медианным просмотрам в день. Выборка — ${demand ? fmtInt(demand.rated_count) : "…"} объявлений за ${demand?.window_days ?? 7} дней.`}
-      >
-        {demand ? (
-          <>
+      <Card>
+        <CardHeader>
+          <CardTitle>Самые желанные и самые незаметные модели</CardTitle>
+          <CardDescription>
+            Индекс внимания (рынок = 100) по медианным просмотрам в день. Выборка —{" "}
+            {demand ? fmtInt(demand.rated_count) : "…"} объявлений за{" "}
+            {demand?.window_days ?? 7} дней.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {demand ? (
             <div className="grid gap-6 lg:grid-cols-2">
               {(
                 [
@@ -188,89 +203,92 @@ export default async function Glubzhe() {
                 ] as const
               ).map(([title, rows]) => (
                 <div key={title}>
-                  <h3 className="mb-2 font-bold">{title}</h3>
-                  <div className="overflow-x-auto border border-g300">
-                    <table className="w-full">
-                      <thead className="bg-g100">
-                        <tr>
-                          <Th>Модель</Th>
-                          <Th num>Индекс</Th>
-                          <Th num>Медиана, $</Th>
-                          <Th num>Объявл.</Th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {rows.slice(0, 10).map((m) => (
-                          <tr key={`${m.make}-${m.model}`} className="hover:bg-g100">
-                            <Td>
-                              {m.make} {m.model}
-                            </Td>
-                            <Td num>{m.index}</Td>
-                            <Td num>{fmtInt(m.median_price_usd)}</Td>
-                            <Td num>{fmtInt(m.count)}</Td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <h3 className="mb-2 text-sm font-semibold">{title}</h3>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Модель</TableHead>
+                        <NumHead>Индекс</NumHead>
+                        <NumHead>Медиана, $</NumHead>
+                        <NumHead>Объявл.</NumHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {rows.slice(0, 10).map((m) => (
+                        <TableRow key={`${m.make}-${m.model}`}>
+                          <TableCell className="font-medium">
+                            {m.make} {m.model}
+                          </TableCell>
+                          <NumCell>{m.index}</NumCell>
+                          <NumCell>{fmtInt(m.median_price_usd)}</NumCell>
+                          <NumCell>{fmtInt(m.count)}</NumCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </div>
               ))}
             </div>
-            <ExportLinks csv="/api/export/fuel-demand" json="https://avtostat.kg/api/demand" />
-          </>
-        ) : (
-          <NoData />
-        )}
-      </Section>
+          ) : (
+            <NoData />
+          )}
+        </CardContent>
+        <CardFooter>
+          <ExportButtons csv="/api/export/fuel-demand" json="https://avtostat.kg/api/demand" />
+        </CardFooter>
+      </Card>
 
-      <Section
-        kicker="D — автомобили"
-        title="Скорость продажи и цены по маркам"
-        lead="Сколько машин каждой марки снято с продажи за месяц, медианные дни на рынке и медианная цена."
-      >
-        {sold ? (
-          <>
-            <div className="overflow-x-auto border border-g300">
-              <table className="w-full">
-                <thead className="bg-g100">
-                  <tr>
-                    <Th>Марка</Th>
-                    <Th num>Продано за месяц</Th>
-                    <Th num>Медианные дни</Th>
-                    <Th num>Медиана, $</Th>
-                    <Th num>Потеря цены, %/год</Th>
-                  </tr>
-                </thead>
-                <tbody>
+      <Card>
+        <CardHeader>
+          <CardTitle>Скорость продажи и цены по маркам</CardTitle>
+          <CardDescription>
+            Сколько машин каждой марки снято с продажи за месяц, медианные дни на рынке и
+            медианная цена.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {sold ? (
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Марка</TableHead>
+                    <NumHead>Продано за месяц</NumHead>
+                    <NumHead>Медианные дни</NumHead>
+                    <NumHead>Медиана, $</NumHead>
+                    <NumHead>Потеря цены, %/год</NumHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {sold.by_make.slice(0, 15).map((m) => {
                     const ret = dash?.retention.find((r) => r.make === m.make);
                     return (
-                      <tr key={m.make} className="hover:bg-g100">
-                        <Td>{m.make}</Td>
-                        <Td num>{fmtInt(m.sold_count)}</Td>
-                        <Td num>{m.median_days}</Td>
-                        <Td num>{fmtInt(m.median_price_usd)}</Td>
-                        <Td num>
-                          {ret ? fmtPct(ret.drop_pct_per_year, 1) : "—"}
-                        </Td>
-                      </tr>
+                      <TableRow key={m.make}>
+                        <TableCell className="font-medium">{m.make}</TableCell>
+                        <NumCell>{fmtInt(m.sold_count)}</NumCell>
+                        <NumCell>{m.median_days}</NumCell>
+                        <NumCell>{fmtInt(m.median_price_usd)}</NumCell>
+                        <NumCell>{ret ? fmtPct(ret.drop_pct_per_year, 1) : "—"}</NumCell>
+                      </TableRow>
                     );
                   })}
-                </tbody>
-              </table>
-            </div>
-            <ExportLinks csv="/api/export/sold-by-make" json="https://avtostat.kg/api/sold" />
-            <p className="mt-2 max-w-[70ch] text-xs text-g500">
-              «Потеря цены» — среднегодовое снижение цены между соседними модельными годами
-              (геометрическое среднее). Положительное значение = машина дешевеет на столько
-              процентов в год; отрицательное — марка в среднем дорожает (обычно эффект состава
-              выборки).
-            </p>
-          </>
-        ) : (
-          <NoData />
-        )}
-      </Section>
-    </>
+                </TableBody>
+              </Table>
+              <p className="mt-3 max-w-[70ch] text-xs text-muted-foreground">
+                «Потеря цены» — среднегодовое снижение цены между соседними модельными годами
+                (геометрическое среднее). Положительное значение = машина дешевеет на столько
+                процентов в год; отрицательное — марка в среднем дорожает (обычно эффект
+                состава выборки).
+              </p>
+            </>
+          ) : (
+            <NoData />
+          )}
+        </CardContent>
+        <CardFooter>
+          <ExportButtons csv="/api/export/sold-by-make" json="https://avtostat.kg/api/sold" />
+        </CardFooter>
+      </Card>
+    </div>
   );
 }
