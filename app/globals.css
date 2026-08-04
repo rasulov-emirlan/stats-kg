@@ -18,7 +18,7 @@
   --color-g500: var(--g500);
   --color-g800: var(--g800);
   --color-red: var(--red);
-  --font-heading: var(--font-space-grotesk);
+  --font-heading: var(--font-manrope);
   --font-sans: var(--font-inter);
   --font-mono: var(--font-jetbrains-mono);
 }
@@ -34,7 +34,7 @@ body {
 h1,
 h2,
 h3 {
-  font-family: var(--font-space-grotesk), system-ui, sans-serif;
+  font-family: var(--font-manrope), system-ui, sans-serif;
   line-height: 1.15;
 }
 

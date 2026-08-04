@@ -94,7 +94,7 @@ export default async function Home() {
           ) : (
             "десятки тысяч"
           )}{" "}
-          — о продаже жилья, чтобы простыми цифрами показать, сколько стоит жизнь в
+          — о продаже квартир, чтобы простыми цифрами показать, сколько стоит жизнь в
           Кыргызстане. Без опросов и оценок — только реальные цены рынка.
         </p>
 
@@ -104,19 +104,22 @@ export default async function Home() {
             <p className="mt-2 font-heading text-5xl font-bold sm:text-7xl">
               1&nbsp;квартира&nbsp;={" "}
               <span className="text-red">{ratio.toLocaleString("ru-RU")}</span>{" "}
-              {plural(Math.round(ratio), "машина", "машины", "машин")}
+              {/* fractional counts take genitive singular: 7,1 машины */}
+              {Number.isInteger(ratio)
+                ? plural(ratio, "машина", "машины", "машин")
+                : "машины"}
             </p>
             <p className="mt-3 max-w-[70ch] text-g800">
               Медианная квартира в Бишкеке (
               {bishkekSale?.medianPrice != null ? fmtUsd(bishkekSale.medianPrice) : "—"}) стоит
-              как {ratio.toLocaleString("ru-RU")}{" "}
+              примерно как {Math.round(ratio)}{" "}
               {plural(
                 Math.round(ratio),
                 "медианный автомобиль",
                 "медианных автомобиля",
                 "медианных автомобилей"
               )}{" "}
-              с местного рынка ({carUsd != null ? fmtUsd(carUsd) : "—"}).
+              с местного рынка ({carUsd != null ? fmtUsd(carUsd) : "—"} за штуку).
             </p>
           </div>
         )}
@@ -287,7 +290,7 @@ export default async function Home() {
               <>
                 <LineChart
                   points={miPoints}
-                  format="compact"
+                  format="compactPrecise"
                   tableCaption="Медианная цена квартир по дням"
                   valueHeader="Медиана, сом"
                 />

@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
+import { Inter, JetBrains_Mono, Manrope } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
 
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
-  subsets: ["latin"],
-  weight: ["500", "700"],
+const manrope = Manrope({
+  variable: "--font-manrope",
+  subsets: ["latin", "cyrillic"],
+  weight: ["500", "700", "800"],
 });
 
 const inter = Inter({
@@ -53,7 +53,7 @@ export default function RootLayout({
   return (
     <html lang="ru">
       <body
-        className={`${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable} antialiased`}
+        className={`${manrope.variable} ${inter.variable} ${jetbrainsMono.variable} antialiased`}
       >
         <header className="border-b border-g300">
           <div className="mx-auto flex max-w-5xl items-baseline justify-between gap-6 px-4 py-4">
