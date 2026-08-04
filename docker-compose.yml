@@ -1,0 +1,18 @@
+services:
+  statskg:
+    build: .
+    restart: unless-stopped
+    networks: [web]
+    environment:
+      - AVTOSTAT_API_URL=https://avtostat.kg
+      - LALAFO_API_URL=https://stats.kg
+    labels:
+      - traefik.enable=true
+      - "traefik.http.routers.statskg.rule=Host(`statskg.night.enkiduck.com`)"
+      - traefik.http.routers.statskg.entrypoints=websecure
+      - traefik.http.routers.statskg.tls.certresolver=le
+      - traefik.http.services.statskg.loadbalancer.server.port=3000
+
+networks:
+  web:
+    external: true
