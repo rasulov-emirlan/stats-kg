@@ -1,36 +1,21 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# STATS.KG
 
-## Getting Started
+Next.js site over two aggregate APIs (avtostat.kg cars, lalafo-stats real estate).
 
-First, run the development server:
+## Data flow
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+`fetcher/run.mjs` (compose service `fetcher`, same image) pulls every endpoint in
+`fetcher/registry.mjs` hourly with retries, and snapshots it into the `statskg-data`
+volume. The web app reads those snapshots (`lib/sources/fetch.ts`) and only falls back
+to the live upstream if they are >6h old.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Disk safety: `latest.json` per endpoint is overwritten in place; gzipped history is
+written only when content changed (hash dedup), kept hourly 7d / daily 90d / 150 MB cap;
+history writes pause when free space < max(3 GB, 5%); logs are JSON lines on stdout under
+Docker `max-size 10m × 3`. `GET /api/health` → 503 when any snapshot is >3h old.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Open data: `/dannye`, `/api/v1/datasets`, `/api/export/<slug>[?format=json]`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Dev
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`pnpm test` · `pnpm lint` · `pnpm build` · deploy: `docker compose up -d --build`

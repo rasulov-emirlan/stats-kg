@@ -8,6 +8,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 const TITLES: Record<string, string> = {
   "/": "Пульс",
   "/glubzhe": "Глубже",
+  "/dannye": "Данные",
   "/metodika": "Методика",
 };
 

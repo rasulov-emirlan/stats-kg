@@ -45,7 +45,7 @@ export default function RootLayout({
             <footer className="border-t">
               <div className="mx-auto w-full max-w-6xl p-4 text-sm text-muted-foreground md:p-6">
                 Все цифры — из открытых объявлений mashina.kg и lalafo.kg, агрегированные и
-                обновляемые ежедневно. Независимый проект, не связанный с площадками. Как
+                обновляемые ежечасно. Независимый проект, не связанный с площадками. Как
                 считаем — на странице «Методика».
               </div>
             </footer>
