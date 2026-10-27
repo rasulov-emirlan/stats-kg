@@ -23,3 +23,15 @@ describe("toCsv", () => {
     expect(csv).toContain('"with ""quote"", comma",');
   });
 });
+
+import { csvToRecords } from "@/lib/csv";
+describe("csvToRecords", () => {
+  it("round-trips toCsv incl. quotes, nulls, numbers", () => {
+    const rows = [{ a: 'x,"y"', b: 1.5 }, { a: "z", b: null as number | null }];
+    const csv = toCsv(rows, [
+      { header: "a", value: (r) => r.a },
+      { header: "b", value: (r) => r.b },
+    ]);
+    expect(csvToRecords(csv)).toEqual([{ a: 'x,"y"', b: 1.5 }, { a: "z", b: null }]);
+  });
+});

@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity, BookOpenText, ExternalLink, Table2 } from "lucide-react";
+import { Activity, BookOpenText, Database, ExternalLink, Table2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -20,6 +20,7 @@ import {
 const NAV = [
   { href: "/", label: "Пульс", icon: Activity },
   { href: "/glubzhe", label: "Глубже", icon: Table2 },
+  { href: "/dannye", label: "Данные", icon: Database },
   { href: "/metodika", label: "Методика", icon: BookOpenText },
 ];
 
